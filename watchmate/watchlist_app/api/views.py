@@ -8,7 +8,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.shortcuts import get_object_or_404
 from rest_framework.exceptions import ValidationError
-from watchlist_app.api.permission import AdminOrReadOnly, ReviewUserOrReadOnly
+from watchlist_app.api.permission import IsAdminOrReadOnly, IsReviewUserOrReadOnly
 
 # from rest_framework.decorators import api_view
 
@@ -53,6 +53,8 @@ from watchlist_app.api.permission import AdminOrReadOnly, ReviewUserOrReadOnly
    
 
 class WatchlistAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self,request):
         movies = Watchlist.objects.all()
         serializer = WatchlistSeralizer(movies, many=True)
@@ -68,6 +70,9 @@ class WatchlistAV(APIView):
 
 
 class WatchDetailAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+
     def get(self,request,id):
         try:
             movie = Watchlist.objects.get(id=id)
@@ -109,11 +114,16 @@ class WatchDetailAV(APIView):
 #             return Response(serializer.errors)
 
 class StreamPlatformVS(viewsets.ModelViewSet):
-        queryset = StreamPlatform.objects.all()
-        serializer_class = StreamPlatformSeralizer
+    permission_classes = [IsAdminOrReadOnly]
+
+    queryset = StreamPlatform.objects.all()
+    serializer_class = StreamPlatformSeralizer
 
 
 class StreamPlatformAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
+
     def get(self,request):
         platform = StreamPlatform.objects.all()
         # serializer = StreamPlatformSeralizer(platform, many=True, context={'request':request}) #for hyperlinkedRelated field 
@@ -130,6 +140,8 @@ class StreamPlatformAV(APIView):
             return Response(serializer.errors)
     
 class StreamPlatformDetailAV(APIView):
+    permission_classes = [IsAdminOrReadOnly]
+
     def get(self,request,id):
         try:
             platform = StreamPlatform.objects.get(id=id)
@@ -179,6 +191,8 @@ class StreamPlatformDetailAV(APIView):
 # concrete view classes
 class ReviewCreate(generics.CreateAPIView):
     serializer_class = ReviewSerializer
+    permission_classes = [IsAuthenticated]
+
     
     def get_queryset(self):
         return Review.objects.all()
@@ -203,7 +217,7 @@ class ReviewCreate(generics.CreateAPIView):
 class ReviewList(generics.ListAPIView):
     # queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get_queryset(self):
         pk = self.kwargs['pk']
         return Review.objects.filter(watchlist=pk)
@@ -212,4 +226,4 @@ class ReviewList(generics.ListAPIView):
 class ReviewDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
-    permission_classes = [ReviewUserOrReadOnly]
+    permission_classes = [IsReviewUserOrReadOnly]
